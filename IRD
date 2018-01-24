@@ -2308,6 +2308,7 @@ rules = apriori(ts, parameter=list(support=0.01, confidence=0.5))
 
 # Podglad regul
 rules
+inspect - Wypisuje w postaci tekstowej regule o najwyzszej pewnosci - 3 w wyrażeniu pokazuje ile reguł
 inspect(head(sort(rules, by="lift"),3))
 
 # Wizualizacja regul asocjacyjnych - rozne sposoby
@@ -2416,15 +2417,17 @@ head(iris)
 
 irisCluster_sepal <- kmeans(iris[, 1:2], centers = 3, nstart = 10)
 iris$Cluster_sepal <- as.factor(irisCluster_sepal$cluster)
+# Wizualizacja zbioru danych
 ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species, shape = Cluster_sepal)) + geom_point()
 
 #uzywajac wszystkich dostepnych informacji o wymiarach roslin.
-
+# Grupowanie metoda k-srednich - z uzyciem 2 kolumn danych(3:4)
 irisCluster_all <- kmeans(iris[, 1:4], centers = 3, nstart = 10)
 iris$Cluster_all <- as.factor(irisCluster_all$cluster)
 ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species, shape = Cluster_all)) + geom_point()
 ggplot(iris, aes(Petal.Length, Petal.Width, color = Species, shape = Cluster_all)) + geom_point()
 
+# Porownanie odkrytych grup z podzialem na gatunki
 table(iris$Cluster_sepal, iris$Species)
 table(iris$Cluster_all,  iris$Species)
 
