@@ -2631,7 +2631,141 @@ matrix.function = function(z, y, method="*"){
 }
 
 matrix.function(15,14, method="+") #Znak plusa nie jest konieczny do dodawania, wystarczy, że będzie cokolwiek innego niż "*"
-  
+
+rm(list = ls())
+
+#Zadanie 1
+
+zad1 = function(n) {
+  if(typeof(n) != "integer" && typeof(n) != "double") return (NA)
+  if(n < 3) return(NA)
+  m = matrix(1:1, n, n)
+  for(i in 1:n) {
+    for(j in 1:n) {
+      if(i == j) m[i, j] = 0
+      else if(i > j) m[i, j] = i + j
+    }
+  }
+  return(m)
+}
+
+for(i in list(4, 10, 2, -1, NA, "tekst")) print(zad1(i))
+
+#Zadanie 2
+
+zad2 = function(n) {
+  #Na wszelki wypadek :D
+  if(typeof(n) != "integer" && typeof(n) != "double") return (NA)
+  if(n < 0) return(NA)
+  for(i in 1:n) {
+    if(i %% 12 == 0) print("FizzBuzz")
+    else if(i %% 4 == 0) print("Buzz")
+    else if(i %% 3 == 0) print("Fizz")
+    else print(i)
+  }
+}
+
+zad2(100)
+
+#Zadanie 3
+
+zad3 = function(f, p) {
+  if(p >= 1 || p <= 0) return(NULL)
+  set.seed(1337)
+  train_index <- runif(nrow(f)) < p
+  train <- dane[!train_index,]
+  test <- dane[train_index,]
+  return(list(train = train, test = test))
+}
+
+#Zadanie 4
+
+library(dplyr)
+
+dane <- read.csv2('data/HR_comma_sep.csv', header = TRUE, sep = ',', stringsAsFactors = TRUE, dec = '.')
+
+tab <- dane %>%
+  select(., average_montly_hours, sales, salary) %>%
+  group_by(., sales, salary) %>%
+  summarise(., average_daily_hours = round(mean(average_montly_hours/21), digits = 2)) %>%
+  arrange(., average_daily_hours)
+
+View(tab)
+tab
+
+#Zadanie 5
+
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(ROCR)
+
+head(dane)
+summary(dane)
+dane$left = factor(dane$left)
+
+set.seed(1337)
+train_index <- runif(nrow(dane)) < 0.25
+train <- dane[!train_index,]
+test <- dane[train_index,]
+
+tree <- rpart(left ~., data = train, cp = 0.01)
+forest <- randomForest(left ~., data = train)
+
+rpart.plot(tree, under=FALSE, fallen.leaves = FALSE, cex = 0.9)
+varImpPlot(forest)
+
+#Macierz bledow drzewa
+CMt <- table(predict(tree, new = test, type = "class"), test$left)
+CMt
+#Macierz bledow lasu
+CMf <- table(predict(forest, new = test, type = "class"), test$left)
+CMf
+
+EvaluateModel <- function(classif_mx)
+{
+  true_positive <- classif_mx[1,1]
+  true_negative <- classif_mx[2,2]
+  condition_positive <- sum(classif_mx[ ,1])
+  condition_negative <- sum(classif_mx[ ,2])
+  accuracy <- (true_positive + true_negative) / sum(classif_mx)
+  sensitivity <- true_positive / condition_positive
+  return(list(accuracy = accuracy, 
+              sensitivity = sensitivity))
+}
+
+#Dokladnosc i czulosc
+EvaluateModel(CMt)
+EvaluateModel(CMf)
+
+#Wykresy dla drzewa
+plottingDataT <- predict(tree, newdata = test)
+plottingDataT <- as.vector(plottingDataT[,2])
+
+#Krzywa ROC
+plot(performance(prediction(plottingDataT, test$left), "tpr", "fpr"), lwd = 2, colorize = T)
+#Sensitivity/specificity
+plot(performance(prediction(plottingDataT, test$left), "sens", "spec"), lwd = 2) 
+#Krzywa lift
+plot(performance(prediction(plottingDataT, test$left), "lift", "rpp"), lwd = 2, col = "darkblue") 
+#AUC
+AUCT <- performance(prediction(plottingDataT, test$left), "auc")@y.values[[1]]
+AUCT
+
+#Wykresy dla lasu
+forecast <- predict(forest, newdata = test, type = "prob")[,2]
+plottingDataF <- prediction(forecast, test$left)
+
+#Krzywa ROC
+plot(performance(plottingDataF, "tpr", "fpr"), lwd = 2, colorize = T) 
+#Sensitivity/specificity
+plot(performance(plottingDataF, "sens", "spec"), lwd = 2) 
+#Krzywa lift
+plot(performance(plottingDataF, "lift", "rpp"), lwd = 2, col = "darkblue") 
+#AUC (Area Under Curve) - pole pod krzywa ROC
+AUCF <- performance(plottingDataF, "auc")@y.values[[1]]
+AUCF
+
 
 
 
