@@ -2610,5 +2610,28 @@ plot(performance(plottingData ,"sens","spec"),lwd=2)
 # Lift chart
 plot(performance(plottingData ,"lift","rpp"),lwd=2, col = "darkblue") 
 
+matrix.function = function(z, y, method="*"){
+  macierz = matrix(nrow=z, ncol=y)
+  
+  if (method == "*"){ #należy pamiętać, że przy sprawdzaniu spełnienia warunku musi być podwójne równa się
+  
+  for (i in c(1:z)){
+    for (j in c(1:y)){
+      macierz[i,j] = i*j
+    }
+  }
+  }else {
+    for (i in c(1:z)){
+      for (j in c(1:y)){
+      macierz[i,j] = i+j
+      }
+    }
+  }
+  return(macierz)
+}
+
+matrix.function(15,14, method="+") #Znak plusa nie jest konieczny do dodawania, wystarczy, że będzie cokolwiek innego niż "*"
+  
+
 
 
